@@ -1,0 +1,2 @@
+color primary : 208BCC
+color secondary : 48CABC
