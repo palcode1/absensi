@@ -71,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'SIGN IN !',
+              'SIGN UP !',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const Spacer(flex: 1),
