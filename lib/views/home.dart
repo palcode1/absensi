@@ -1,3 +1,4 @@
+import 'package:absensi/views/absensi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -32,26 +33,17 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: Colors.blue[700],
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            Icon(Icons.home, color: Colors.black),
-            Icon(Icons.receipt_long_outlined, color: Colors.black),
-            Icon(Icons.edit_document, color: Colors.black),
-            Icon(Icons.person, color: Colors.black),
-          ],
-        ),
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        elevation: 0,
+        toolbarHeight: 0, // Menghilangkan height AppBar
       ),
       body: Column(
         children: [
           // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
-            color: Colors.blue[700],
+            color: Colors.blue,
             width: double.infinity,
             child: Row(
               children: const [
@@ -65,80 +57,112 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          // Kontainer Utama
+          // Waktu dan Tanggal
+          Container(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  _currentTime,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(_currentDate, style: const TextStyle(fontSize: 16)),
+              ],
+            ),
+          ),
+
+          // Grid Menu
           Expanded(
-            child: SingleChildScrollView(
-              child: Container(
-                margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Map placeholder
-                    Container(
-                      height: 120,
-                      width: double.infinity,
-                      color: Colors.white,
-                      child: const Center(
-                        child: Text(
-                          "Maps",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Jam dan Tanggal
-                    Text(
-                      _currentTime,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(_currentDate, style: const TextStyle(fontSize: 16)),
-
-                    const SizedBox(height: 16),
-
-                    // Tombol Check-In
-                    ElevatedButton(
-                      onPressed: () {
-                        // Aksi check-in
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(50),
-                        backgroundColor: Colors.blue,
-                        elevation: 6,
-                      ),
-                      child: const Text(
-                        "Check-In",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-                    const Text(
-                      "Check-In sebelum bekerja pada hari ini !",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                children: [
+                  _buildMenuCard(Icons.calendar_today, "Absensi", context),
+                  _buildMenuCard(Icons.history, "History", context),
+                  _buildMenuCard(Icons.request_page, "Penajuan Izin", context),
+                  _buildMenuCard(Icons.request_page, "Penajuan Izin", context),
+                ],
               ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long_outlined),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.edit_document), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
+        ],
+        currentIndex: 0,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          // Tambahkan navigasi sesuai kebutuhan
+        },
+      ),
+    );
+  }
+
+  Widget _buildMenuCard(IconData icon, String title, BuildContext context) {
+    return InkWell(
+      onTap: () {
+        // Tambahkan navigasi berdasarkan title
+        if (title == "Absensi") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AbsensiPage()),
+          );
+        } else if (title == "History") {
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const HistoryPage()),
+          // );
+        } else if (title == "Penajuan Izin") {
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const PenajuanIzinPage()),
+          // );
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 40, color: Colors.grey[600]),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }
