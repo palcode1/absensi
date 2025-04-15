@@ -1,27 +1,9 @@
-// import 'package:flutter/material.dart';
-
-// class ProfilePage extends StatefulWidget {
-//   const ProfilePage({super.key});
-
-//   @override
-//   State<ProfilePage> createState() => _ProfilePageState();
-// }
-
-// class _ProfilePageState extends State<ProfilePage>{
-
-// ElevatedButton(
-//   onPressed: () async {
-//     await AuthService.logout();
-//     Navigator.pushReplacement(
-//       context,
-//       MaterialPageRoute(builder: (context) => LoginPage()),
-//     );
-//   },
-//   child: Text("Logout"),
-// ),
-
-// }
+import 'package:absensi/services/auth_services.dart';
+import 'package:absensi/views/auth_page/login.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:absensi/API/endpoint.dart';
+import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -29,9 +11,39 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String fullName = 'Nama Lengkap';
-  String userName = 'UserName';
-  String email = 'email@gmail.com';
+  String? name;
+  String? email;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfile();
+  }
+
+  Future<void> fetchProfile() async {
+    final user = await AuthService.getProfile();
+
+    if (user != null) {
+      setState(() {
+        name = user.name;
+        email = user.email;
+      });
+    }
+  }
+
+  Future<void> _logout() async {
+    await AuthService.logout();
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Logout Successful')));
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+      (Route<dynamic> route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Expanded(
             child: Container(
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -64,14 +77,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      fullName,
+                      'Nama Lengkap',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      userName,
+                      name ?? 'Loading...',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 8),
@@ -83,42 +96,56 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     Text(
-                      email,
+                      email ?? 'Loading...',
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {
-                        // _editProfile();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // _editProfile();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
+                        child: Text(
+                          'EDIT PROFILE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                      child: Text('Edit Profile'),
                     ),
                     SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        _logout();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _logout();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                         ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
+                        child: Text(
+                          'LOGOUT',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                      child: Text('LOGOUT'),
                     ),
                   ],
                 ),
@@ -126,19 +153,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
-        currentIndex: 2,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          // Tambahkan navigasi sesuai index
-        },
       ),
     );
   }
@@ -183,11 +197,4 @@ class _ProfilePageState extends State<ProfilePage> {
   //     },
   //   );
   // }
-
-  void _logout() {
-    // Contoh aksi logout
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Logout Successful')));
-  }
 }

@@ -39,17 +39,21 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     if (result != null && result.data?.token != null) {
+      print("Login berhasil: Token = ${result.data?.token}");
+
+      print("User Email: ${result.data?.user?.email}");
       final userName = result.data?.user?.name ?? "User";
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Selamat datang, $userName")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Selamat datang, ${result.data?.user?.name}")),
+      );
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
+      print("Login gagal: Token tidak ditemukan di response.");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Login gagal, cek email dan password kamu."),

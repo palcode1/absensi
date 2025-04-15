@@ -1,4 +1,7 @@
 import 'package:absensi/views/absensi.dart';
+import 'package:absensi/views/profile.dart';
+import 'package:absensi/views/history.dart';
+import 'package:absensi/views/izin.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -113,6 +116,29 @@ class _HomePageState extends State<HomePage> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
+          switch (index) {
+            case 0:
+              // Home (tetap di halaman ini)
+              break;
+            case 1:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryPage()),
+              );
+              break;
+            case 2:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const IzinPage()),
+              );
+              break;
+            case 3:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProfilePage()),
+              );
+              break;
+          }
           // Tambahkan navigasi sesuai kebutuhan
         },
       ),

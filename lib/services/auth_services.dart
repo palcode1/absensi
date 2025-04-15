@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:absensi/API/profile_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:absensi/API/login_model.dart';
 import 'package:absensi/API/regist_model.dart';
@@ -21,7 +22,14 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        return loginFromJson(response.body); // parsing pakai model
+        final loginData = loginFromJson(response.body);
+
+        // Simpan token ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', loginData.token ?? '');
+        print("Token login disimpan: ${loginData.token}");
+
+        return loginData;
       } else {
         print("Login gagal: ${response.body}");
         return null;
@@ -48,13 +56,54 @@ class AuthService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return registerFromJson(response.body); // pakai model register
+        final registerData = registerFromJson(response.body);
+
+        // Simpan token ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', registerData.token ?? '');
+        print("Token register disimpan: ${registerData.token}");
+
+        return registerData;
       } else {
         print("Gagal register: ${response.body}");
         return null;
       }
     } catch (e) {
       print("Error saat register: $e");
+      return null;
+    }
+  }
+
+  // GET PROFILE
+  static Future<ProfileData?> getProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) return null;
+
+    final url = Uri.parse('$baseUrl/profile');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final profile = profileFromJson(response.body);
+        print(
+          "Data profil berhasil diambil: ${profile.data?.name}, ${profile.data?.email}",
+        );
+        return profile.data;
+      } else {
+        print("Gagal mendapatkan profil: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Error saat get profile: $e");
       return null;
     }
   }

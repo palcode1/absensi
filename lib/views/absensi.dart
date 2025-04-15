@@ -1,5 +1,9 @@
+import 'package:absensi/services/geo_services.dart';
 import 'package:absensi/views/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
@@ -14,6 +18,24 @@ class _AbsensiPageState extends State<AbsensiPage> {
   String _currentTime = '';
   String _currentDate = '';
   int _selectedIndex = 0; // Indeks halaman yang sedang aktif
+  bool isWithinRange = false; // Status apakah dalam jangkauan
+  bool isLoading = true;
+
+  // Google Maps Controller
+  late GoogleMapController mapController;
+  LatLng? _currentPosition;
+
+  // Titik tetap untuk absen
+  final LatLng attendancePoint = const LatLng(-6.21087, 106.81298);
+
+  // Lokasi awal (misalnya Jakarta)
+  static const LatLng _initialPosition = LatLng(-6.2088, 106.8456);
+
+  // Kamera posisi untuk Google Maps
+  CameraPosition _initialCameraPosition = CameraPosition(
+    target: _initialPosition,
+    zoom: 14.0,
+  );
 
   final List<Widget> _pages = [
     // HomePage(), // Halaman Beranda
@@ -26,6 +48,7 @@ class _AbsensiPageState extends State<AbsensiPage> {
   void initState() {
     super.initState();
     _updateTime();
+    _determinePosition();
     Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
   }
 
@@ -41,6 +64,41 @@ class _AbsensiPageState extends State<AbsensiPage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> _determinePosition() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      print('Location services are disabled.');
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        print('Location permissions are denied');
+        return;
+      }
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    final double distanceInMeters = Geolocator.distanceBetween(
+      attendancePoint.latitude,
+      attendancePoint.longitude,
+      position.latitude,
+      position.longitude,
+    );
+
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      isWithinRange = distanceInMeters <= 15.0;
+      isLoading = false;
+    });
+    print('Jarak ke titik absen: ${distanceInMeters.toStringAsFixed(2)} meter');
   }
 
   @override
@@ -106,17 +164,49 @@ class _AbsensiPageState extends State<AbsensiPage> {
                 ),
                 child: Column(
                   children: [
-                    // Map placeholder
+                    // Map placeholder google maps
                     Container(
-                      height: 120,
+                      height: 400,
                       width: double.infinity,
-                      color: Colors.white,
-                      child: const Center(
-                        child: Text(
-                          "Maps",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                      child:
+                          isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: _currentPosition!,
+                                  zoom: 16,
+                                ),
+                                myLocationEnabled: true,
+                                onMapCreated: (GoogleMapController controller) {
+                                  mapController = controller;
+                                },
+                                markers: {
+                                  Marker(
+                                    markerId: const MarkerId('absen'),
+                                    position: attendancePoint,
+                                    infoWindow: const InfoWindow(
+                                      title: 'Titik Absen',
+                                    ),
+                                  ),
+                                  Marker(
+                                    markerId: const MarkerId('user'),
+                                    position: _currentPosition!,
+                                    infoWindow: const InfoWindow(
+                                      title: 'Posisi Anda',
+                                    ),
+                                  ),
+                                },
+                                circles: {
+                                  Circle(
+                                    circleId: const CircleId('absen-radius'),
+                                    center: attendancePoint,
+                                    radius: 15.0,
+                                    fillColor: Colors.red.withOpacity(0.2),
+                                    strokeColor: Colors.red,
+                                    strokeWidth: 1,
+                                  ),
+                                },
+                              ),
                     ),
                     const SizedBox(height: 16),
 
