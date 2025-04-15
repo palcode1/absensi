@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:absensi/API/login_model.dart';
 import 'package:absensi/API/regist_model.dart';
+import 'package:absensi/API/endpoint.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://absen.quidi.id/api';
-
   // LOGIN
   static Future<Login?> login({
     required String email,
@@ -57,5 +57,12 @@ class AuthService {
       print("Error saat register: $e");
       return null;
     }
+  }
+
+  // LOGOUT
+  static Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token'); // Hapus token dari penyimpanan
+    print("Token berhasil dihapus, user logout.");
   }
 }

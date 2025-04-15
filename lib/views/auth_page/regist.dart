@@ -2,6 +2,7 @@ import 'package:absensi/views/auth_page/login.dart';
 import 'package:absensi/API/regist_model.dart';
 import 'package:absensi/services/auth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -29,6 +30,15 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password minimal 6 karakter")),
+      );
+      return;
+    }
+
+    FocusScope.of(context).unfocus(); // tutup keyboard
+
     setState(() => isLoading = true);
 
     final Register? result = await AuthService.register(
@@ -41,6 +51,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (result != null && result.data?.token != null) {
       final userName = result.data?.user?.name ?? "User";
+
+      // Simpan token ke SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', result.data!.token!);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

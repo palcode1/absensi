@@ -9,4 +9,15 @@
 
 // class _ProfilePageState extends State<ProfilePage>{
 
+// ElevatedButton(
+//   onPressed: () async {
+//     await AuthService.logout();
+//     Navigator.pushReplacement(
+//       context,
+//       MaterialPageRoute(builder: (context) => LoginPage()),
+//     );
+//   },
+//   child: Text("Logout"),
+// ),
+
 // }
