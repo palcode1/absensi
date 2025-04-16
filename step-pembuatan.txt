@@ -1,0 +1,65 @@
+Step pembuatan absensi.
+
+1. Siapkan data JSON dari API. Dimana data JSON ini diparsing ke dalam bahasa Dart yang dibuat ke dalam
+model yang berfungsi untuk mengonversi data dalam format JSON yang diterima oleh API menjadi objek Dart,
+sehingga data lebih mudah digunakan.
+
+2. Menyiapkan file endpoint.dart, yang digunakan untuk menaruh link url API.
+
+3. Selanjutnya adalah membubat UI login, regist, dsb.
+
+4. Setelahnya membuat auth_service.dart yang digunakan untuk mengelola semua proses autentikasi, 
+seperti Login, Register, GetProfile, Logout, Update.
+
+5. Pada bagian auth_services.dart ini juga terdapat sintaks yang berfungsi untuk menyimpan token ke dalam
+shared preferences (lokal), berikut sintaksnya :
+// Simpan token ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', loginData.data?.token ?? '');
+        print("Token login disimpan: ${loginData.data?.token}");
+
+        return loginData;
+(Berlaku juga untuk bagian Register).
+
+6. Melakukan konfigurasi untuk menyimpan API Key untuk menampilkan Google Maps.
+-> Menyiapkan depedensi di pubspec.yaml, seperti google_maps_flutter, geolocator, geocoding.
+-> Melakukan konfigurasi Android dengan menambahkan sintaks di bawah ini ke dalam 
+android/app/src/main/AndroidManifest.xml.
+(Untuk meminta permission untuk mengakses lokasi)
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+(Untuk menambahkan value API KEY Google Maps)
+<meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="ISI_API_KEY_KAMU"/>
+
+6. Menyiapkan beberapa package di pubspec.yaml, seperti :
+- flutter_launcher_icons: ^0.14.3 (Untuk mengganti icon aplikasi)
+- geolocator: ^13.0.4 (Digunakan untuk mengakses informasi lokasi perangkat (GPS) seperti lokasi saat ini,
+latitude dan longitude. Serta memeriksa izin lokasi dan mendukung fitur seperti menghitung jarak antar
+koordinat)
+- google_maps_flutter: ^2.12.1 (Digunakan untuk menampilkan peta Google Maps di aplikasi. Untuk menambah
+marker, peta interaktif, menggambar poligon, dan interaksi lainnya)
+- geocoding: ^2.2.0 (Digunakan untuk melakukan geocoding dan reverse geocoding. Geocoding adalah proses
+mengubah alamat fisik menjadi koordinat latitude dan longitude, sedangkan reverse geocoding sebaliknya)
+- http: ^1.3.0 (Digunakan untuk melakukan HTTP Request untuk berkomunikasi dengan server/API, 
+seperti Get, Post, Put, Delete)
+- intl: ^0.20.2 (Digunakan menambahkan format tanggal dan waktu. Menampilkan mata uang dan angka 
+sesuai negara atau bahasa. Dan mendukung penerjemahan string ke berbagai bahasa di dunia)
+- shared_preferences: ^2.5.3 (Digunakan untuk menyimpan data lokal secara sederhana dalam bentuk 
+key-value pairs. Menyimpan pengaturan pengguna, seperti preferensi tema, status login, atau token 
+autentikasi. Menyimpan data sementara yang harus tetap ada setelah aplikasi ditutup 
+misalnya, ID pengguna, nilai variabel sementara, dll).
+
+Permasalahan yang muncul dan solusinya
+1. Jadi jika sudah ada link endpoint.dart pada bagian auth_services.dart tidak perlu menuliskan kembali
+link url API. Cukup "final url = Uri.parse('$baseUrl/profile');"
+
+2. Data name dan email tidak muncul pada halaman profile ketika Get Data Profile. Penyebabnya adalah 
+kesalahan dalam menulis struktur sintaks pada auth_services.dart tidak sama dengan struktur pada postman. 
+Dimana ketika mengakses token tidak
+bisa ditemukan karena seharusnya struktur token berada di dalam data.
+// Simpan token ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', loginData.data?.token ?? '');
+        print("Token login disimpan: ${loginData.data?.token}");

@@ -118,6 +118,10 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           switch (index) {
             case 0:
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+              );
               // Home (tetap di halaman ini)
               break;
             case 1:
@@ -155,10 +159,10 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => const AbsensiPage()),
           );
         } else if (title == "History") {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => const HistoryPage()),
-          // );
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HistoryPage()),
+          );
         } else if (title == "Penajuan Izin") {
           // Navigator.push(
           //   context,

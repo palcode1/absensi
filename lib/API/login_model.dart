@@ -14,10 +14,8 @@ class Login {
 
   Login({this.message, this.data});
 
-  factory Login.fromJson(Map<String, dynamic> json) => Login(
-    message: json["message"],
-    data: json["data"] == null ? null : Data.fromJson(json["data"]),
-  );
+  factory Login.fromJson(Map<String, dynamic> json) =>
+      Login(message: json["message"], data: Data.fromJson(json["data"]));
 
   Map<String, dynamic> toJson() => {"message": message, "data": data?.toJson()};
 }

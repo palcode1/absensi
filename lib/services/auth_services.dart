@@ -26,8 +26,8 @@ class AuthService {
 
         // Simpan token ke SharedPreferences
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', loginData.token ?? '');
-        print("Token login disimpan: ${loginData.token}");
+        await prefs.setString('token', loginData.data?.token ?? '');
+        print("Token login disimpan: ${loginData.data?.token}");
 
         return loginData;
       } else {
@@ -60,8 +60,8 @@ class AuthService {
 
         // Simpan token ke SharedPreferences
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', registerData.token ?? '');
-        print("Token register disimpan: ${registerData.token}");
+        await prefs.setString('token', registerData.data?.token ?? '');
+        print("Token register disimpan: ${registerData.data?.token}");
 
         return registerData;
       } else {

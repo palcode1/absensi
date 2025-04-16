@@ -79,78 +79,89 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 50.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'SIGN UP !',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
             ),
-            const Spacer(flex: 1),
-            const Text(
-              'Halo, Selamat Datang',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 20),
-            const Text('Nama Lengkap', style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 20),
-            const Text('Email', style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 20),
-            const Text('Password', style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : _handleRegister,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'SIGN UP !',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                child: const Text(
-                  'SUBMIT',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.white,
+                const SizedBox(height: 60),
+                const Text(
+                  'Halo, Selamat Datang',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 20),
+                const Text('Nama Lengkap', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 20),
+                const Text('Email', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 20),
+                const Text('Password', style: TextStyle(fontSize: 16)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                    ),
+                    child: const Text(
+                      'SUBMIT',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()),
-                  ); // Navigasi ke halaman registrasi
-                },
-                child: const Text(
-                  'Sudah punya akun? Login di sini!',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                const SizedBox(height: 16),
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      ); // Navigasi ke halaman registrasi
+                    },
+                    child: const Text(
+                      'Sudah punya akun? Login di sini!',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-            const Spacer(flex: 3),
-          ],
+          ),
         ),
       ),
     );

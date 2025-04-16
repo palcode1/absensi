@@ -24,10 +24,14 @@ class _ProfilePageState extends State<ProfilePage> {
     final user = await AuthService.getProfile();
 
     if (user != null) {
+      print("Nama dari API: ${user.name}");
+      print("Email dari API: ${user.email}");
       setState(() {
         name = user.name;
         email = user.email;
       });
+    } else {
+      print("User is null saat fetchProfile()");
     }
   }
 
