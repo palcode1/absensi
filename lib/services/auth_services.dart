@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:absensi/API/profile_model.dart';
+import 'package:absensi/API_models/profile_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:absensi/API/login_model.dart';
-import 'package:absensi/API/regist_model.dart';
-import 'package:absensi/API/endpoint.dart';
+import 'package:absensi/API_models/login_model.dart';
+import 'package:absensi/API_models/regist_model.dart';
+import 'package:absensi/API_models/endpoint.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {

@@ -1,5 +1,5 @@
 import 'package:absensi/views/auth_page/login.dart';
-import 'package:absensi/API/regist_model.dart';
+import 'package:absensi/API_models/regist_model.dart';
 import 'package:absensi/services/auth_services.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

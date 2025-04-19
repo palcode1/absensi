@@ -1,7 +1,7 @@
 import 'package:absensi/views/auth_page/regist.dart';
 import 'package:absensi/services/auth_services.dart';
-import 'package:absensi/API/login_model.dart';
-import 'package:absensi/views/home.dart';
+import 'package:absensi/API_models/login_model.dart';
+import 'package:absensi/views/absensi.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => const AbsensiPage()),
       );
     } else {
       print("Login gagal: Token tidak ditemukan di response.");

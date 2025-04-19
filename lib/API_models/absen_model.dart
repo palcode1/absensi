@@ -1,28 +1,29 @@
-// To parse this JSON data, do
-//
-//     final checkout = checkoutFromJson(jsonString);
+// absen_model.dart
 
 import 'dart:convert';
 
-Checkout checkoutFromJson(String str) => Checkout.fromJson(json.decode(str));
+AbsensiResponse absensiResponseFromJson(String str) =>
+    AbsensiResponse.fromJson(json.decode(str));
 
-String checkoutToJson(Checkout data) => json.encode(data.toJson());
+String absensiResponseToJson(AbsensiResponse data) =>
+    json.encode(data.toJson());
 
-class Checkout {
+class AbsensiResponse {
   final String? message;
-  final Data? data;
+  final AbsensiData? data;
 
-  Checkout({this.message, this.data});
+  AbsensiResponse({this.message, this.data});
 
-  factory Checkout.fromJson(Map<String, dynamic> json) => Checkout(
-    message: json["message"],
-    data: json["data"] == null ? null : Data.fromJson(json["data"]),
-  );
+  factory AbsensiResponse.fromJson(Map<String, dynamic> json) =>
+      AbsensiResponse(
+        message: json["message"],
+        data: json["data"] == null ? null : AbsensiData.fromJson(json["data"]),
+      );
 
   Map<String, dynamic> toJson() => {"message": message, "data": data?.toJson()};
 }
 
-class Data {
+class AbsensiData {
   final int? id;
   final int? userId;
   final DateTime? checkIn;
@@ -40,7 +41,7 @@ class Data {
   final double? checkOutLat;
   final double? checkOutLng;
 
-  Data({
+  AbsensiData({
     this.id,
     this.userId,
     this.checkIn,
@@ -59,22 +60,27 @@ class Data {
     this.checkOutLng,
   });
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
+  factory AbsensiData.fromJson(Map<String, dynamic> json) => AbsensiData(
     id: json["id"],
     userId: json["user_id"],
-    checkIn: json["check_in"] == null ? null : DateTime.parse(json["check_in"]),
+    checkIn:
+        json["check_in"] == null ? null : DateTime.tryParse(json["check_in"]),
     checkInLocation: json["check_in_location"],
     checkInAddress: json["check_in_address"],
     checkOut:
-        json["check_out"] == null ? null : DateTime.parse(json["check_out"]),
+        json["check_out"] == null ? null : DateTime.tryParse(json["check_out"]),
     checkOutLocation: json["check_out_location"],
     checkOutAddress: json["check_out_address"],
     status: json["status"],
     alasanIzin: json["alasan_izin"],
     createdAt:
-        json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+        json["created_at"] == null
+            ? null
+            : DateTime.tryParse(json["created_at"]),
     updatedAt:
-        json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+        json["updated_at"] == null
+            ? null
+            : DateTime.tryParse(json["updated_at"]),
     checkInLat: json["check_in_lat"]?.toDouble(),
     checkInLng: json["check_in_lng"]?.toDouble(),
     checkOutLat: json["check_out_lat"]?.toDouble(),
