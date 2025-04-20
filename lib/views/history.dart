@@ -1,7 +1,10 @@
+import 'package:absensi/services/absensi_service.dart';
+import 'package:absensi/API_models/absen_model.dart';
 import 'package:absensi/views/absensi.dart';
 import 'package:absensi/views/profile.dart';
 import 'package:absensi/views/izin.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -12,6 +15,22 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   int currentIndex = 1;
+  List<AbsensiData> _historyList = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
+  }
+
+  Future<void> _fetchHistory() async {
+    final data = await AbsensiService.getHistory();
+    setState(() {
+      _historyList = data;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +54,66 @@ class _HistoryPageState extends State<HistoryPage> {
             ),
           ),
           // Konten utama
-          const Expanded(child: Center(child: Text("Halaman Riwayat"))),
+          Expanded(
+            child:
+                isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _historyList.isEmpty
+                    ? const Center(child: Text("Belum ada data absensi"))
+                    : Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 8, top: 2),
+                      child: ListView.builder(
+                        itemCount: _historyList.length,
+                        itemBuilder: (context, index) {
+                          final item = _historyList[index];
+                          final createdAt =
+                              item.createdAt != null
+                                  ? DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(item.createdAt!)
+                                  : '-';
+                          final checkIn = item.checkIn ?? '-';
+                          final checkOut = item.checkOut ?? '-';
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: ListTile(
+                              leading: const Icon(Icons.calendar_today),
+                              title: Text(
+                                "Tanggal: $createdAt",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Check-In: $checkIn",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Check-Out: $checkOut",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+          ),
         ],
       ),
       bottomNavigationBar: ClipRRect(

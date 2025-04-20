@@ -1,4 +1,5 @@
 import 'package:absensi/services/auth_services.dart';
+import 'package:absensi/services/absensi_service.dart';
 import 'package:absensi/views/history.dart';
 import 'package:absensi/views/profile.dart';
 import 'package:absensi/views/izin.dart';
@@ -8,7 +9,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AbsensiPage extends StatefulWidget {
@@ -20,12 +20,16 @@ class AbsensiPage extends StatefulWidget {
 
 class _AbsensiPageState extends State<AbsensiPage> {
   String? userName;
-  String? checkInTime;
-  String? checkOutTime;
   String _currentTime = '';
   String _currentDate = '';
+
+  bool isCheckedIn = false;
+  bool isCheckedOut = false;
   bool isWithinRange = false; // Status apakah dalam jangkauan
   bool isLoading = true;
+  bool isProcessing = false;
+
+  late Timer _timer;
   int currentIndex = 0; // Menyimpan index menu yang aktif
 
   // Google Maps Controller
@@ -50,8 +54,14 @@ class _AbsensiPageState extends State<AbsensiPage> {
     _updateTime();
     _determinePosition();
     fetchProfile();
+    _fetchStatusHariIni();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateTime());
+  }
 
-    Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   void _updateTime() {
@@ -64,13 +74,29 @@ class _AbsensiPageState extends State<AbsensiPage> {
 
   Future<void> fetchProfile() async {
     final user = await AuthService.getProfile();
-
     if (user != null) {
       setState(() {
         userName = user.name;
       });
     } else {
       print("User is null saat fetchProfile()");
+    }
+  }
+
+  Future<void> _fetchStatusHariIni() async {
+    final status = await AbsensiService.fetchStatusHariIni();
+    if (status.isNotEmpty) {
+      setState(() {
+        if (status['check_in'] != null) {
+          isCheckedIn = true;
+        }
+        if (status['check_out'] != null) {
+          isCheckedOut = true;
+        }
+      });
+      print(
+        '📡 Status Hari Ini -> Check-In: ${status['check_in']}, Check-Out: ${status['check_out']}',
+      );
     }
   }
 
@@ -94,7 +120,7 @@ class _AbsensiPageState extends State<AbsensiPage> {
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    final double distanceInMeters = Geolocator.distanceBetween(
+    final double distance = Geolocator.distanceBetween(
       attendancePoint.latitude,
       attendancePoint.longitude,
       position.latitude,
@@ -103,10 +129,88 @@ class _AbsensiPageState extends State<AbsensiPage> {
 
     setState(() {
       _currentPosition = LatLng(position.latitude, position.longitude);
-      isWithinRange = distanceInMeters <= 15.0;
+      isWithinRange = distance <= 15.0;
       isLoading = false;
     });
-    print('Jarak ke titik absen: ${distanceInMeters.toStringAsFixed(2)} meter');
+    print('Jarak ke titik absen: ${distance.toStringAsFixed(2)} meter');
+  }
+
+  Future<void> _handleAbsensi() async {
+    if (_currentPosition == null) return;
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    if (!isCheckedIn) {
+      // Check-In
+      final result = await AbsensiService.checkIn(
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        address: "Lokasi Check-In",
+      );
+      if (result == "Success") {
+        setState(() {
+          isCheckedIn = true;
+        });
+        print('✅ Berhasil Check-In pada ${_currentTime}');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Check-In berhasil!')));
+      } else if (result == "Sudah Check-In") {
+        setState(() {
+          isCheckedIn = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Anda sudah melakukan check-in hari ini!'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Check-In gagal. Coba lagi nanti.')),
+        );
+      }
+    } else if (isCheckedIn && !isCheckedOut) {
+      // Check-Out
+      final result = await AbsensiService.checkOut(
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        address: "Lokasi Check-Out",
+      );
+      if (result == "Success") {
+        setState(() {
+          isCheckedOut = true;
+        });
+        print('✅ Berhasil Check-Out pada ${_currentTime}');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Check-Out berhasil!')));
+      } else if (result == "Sudah Check-Out") {
+        setState(() {
+          isCheckedOut = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Anda sudah melakukan Check-Out hari ini!'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Check-Out gagal. Coba lagi nanti.')),
+        );
+      }
+    } else if (isCheckedIn && isCheckedOut) {
+      // Sudah absen semua ➔ Pergi ke HistoryPage
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HistoryPage()),
+      );
+    }
+
+    setState(() {
+      isProcessing = false;
+    });
   }
 
   @override
@@ -197,7 +301,6 @@ class _AbsensiPageState extends State<AbsensiPage> {
                               ),
                     ),
                     const SizedBox(height: 16),
-
                     // Jam dan Tanggal
                     Text(
                       _currentTime,
@@ -207,64 +310,50 @@ class _AbsensiPageState extends State<AbsensiPage> {
                       ),
                     ),
                     Text(_currentDate, style: const TextStyle(fontSize: 16)),
-
                     const SizedBox(height: 16),
-
                     // Tombol Check-In
                     ElevatedButton(
-                      onPressed: () {
-                        if (!isWithinRange) return;
-                        final now = DateFormat(
-                          'HH:mm:ss',
-                        ).format(DateTime.now());
-                        if (checkInTime == null) {
-                          setState(() {
-                            checkInTime = now;
-                          });
-                        } else if (checkOutTime == null) {
-                          setState(() {
-                            checkOutTime = now;
-                          });
-                        } else {
-                          // Sudah absen, arahkan ke halaman history
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HistoryPage(),
-                            ),
-                          );
-                        }
-                      },
+                      onPressed:
+                          isWithinRange && !isProcessing
+                              ? _handleAbsensi
+                              : null,
                       style: ElevatedButton.styleFrom(
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(50),
                         backgroundColor:
-                            checkInTime == null
+                            !isCheckedIn
                                 ? Colors.blue
-                                : checkOutTime == null
+                                : isCheckedIn && !isCheckedOut
                                 ? Colors.red
                                 : Colors.grey,
                         elevation: 6,
                       ),
-                      child: Text(
-                        checkInTime == null
-                            ? "Check-In"
-                            : checkOutTime == null
-                            ? "Check-Out"
-                            : "Sudah Absen",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                      child:
+                          isProcessing
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                              : Text(
+                                !isCheckedIn
+                                    ? "Check-In"
+                                    : isCheckedIn && !isCheckedOut
+                                    ? "Check-Out"
+                                    : "Sudah Absen",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
                     ),
-
                     const SizedBox(height: 12),
                     Text(
-                      checkInTime == null
-                          ? "Check-In sebelum bekerja pada hari ini !"
-                          : checkOutTime == null
-                          ? "Check-Out setelah selesai bekerja !"
-                          : "Terima kasih sudah bekerja hari ini !",
+                      !isCheckedIn
+                          ? "Check-In dulu sebelum bekerja pada hari ini!"
+                          : !isCheckedOut
+                          ? "Check-Out dulu setelah bekerja pada hari ini!"
+                          : "Terima kasih sudah bekerja hari ini!",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
@@ -278,12 +367,6 @@ class _AbsensiPageState extends State<AbsensiPage> {
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.blue,
-          items: [
-            _buildNavItem('assets/images/home_icon.png', 0, 'Beranda'),
-            _buildNavItem('assets/images/history_icon.png', 1, 'Riwayat'),
-            _buildNavItem('assets/images/izin_icon.png', 2, 'Izin'),
-            _buildNavItem('assets/images/profile_icon.png', 3, 'Profile'),
-          ],
           currentIndex: currentIndex,
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.grey[800],
@@ -323,6 +406,12 @@ class _AbsensiPageState extends State<AbsensiPage> {
                 break;
             }
           },
+          items: [
+            _buildNavItem('assets/images/home_icon.png', 0, 'Beranda'),
+            _buildNavItem('assets/images/history_icon.png', 1, 'Riwayat'),
+            _buildNavItem('assets/images/izin_icon.png', 2, 'Izin'),
+            _buildNavItem('assets/images/profile_icon.png', 3, 'Profile'),
+          ],
         ),
       ),
     );
@@ -339,9 +428,7 @@ class _AbsensiPageState extends State<AbsensiPage> {
         padding: EdgeInsets.all(6),
         decoration: BoxDecoration(
           color:
-              currentIndex == index
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.transparent,
+              isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Image.asset(
