@@ -1,6 +1,6 @@
 // splash_screen.dart
 import 'package:absensi/views/absensi.dart';
-import 'package:absensi/views/home.dart';
+import 'package:absensi/views/main_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:absensi/views/auth_page/login.dart';
@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (token != null && token.isNotEmpty) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AbsensiPage()),
+        MaterialPageRoute(builder: (context) => const MainHomePage()),
       );
     } else {
       Navigator.pushReplacement(

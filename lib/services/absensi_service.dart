@@ -133,6 +133,46 @@ class AbsensiService {
     return {}; // Tidak ada absensi hari ini
   }
 
+  static Future<String> submitIzin({
+    required double latitude,
+    required double longitude,
+    required String address,
+    required String alasanIzin,
+  }) async {
+    final token = await _getToken();
+    if (token == null) return "Token tidak ditemukan";
+
+    final url = Uri.parse(checkInEndpoint);
+    final body = {
+      "check_in_lat": latitude.toString(),
+      "check_in_lng": longitude.toString(),
+      "check_in_address": address,
+      "status": "izin",
+      "alasan_izin": alasanIzin,
+    };
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(body),
+    );
+
+    print('📡 Response Submit Izin: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      if (responseData['message'] == "Izin berhasil dicatat") {
+        return "Success";
+      }
+      return "Error";
+    } else {
+      return "Error";
+    }
+  }
+
   static Future<List<AbsensiData>> getHistory() async {
     final token = await _getToken();
     if (token == null) return [];
@@ -152,6 +192,30 @@ class AbsensiService {
       return data.map((item) => AbsensiData.fromJson(item)).toList();
     } else {
       return [];
+    }
+  }
+
+  static Future<bool> deleteAbsensi(int id) async {
+    final token = await _getToken();
+    if (token == null) return false;
+
+    final url = Uri.parse(
+      '$deleteAbsensiEndpoint/$id',
+    ); // atau sesuai struktur URL API kamu
+    final response = await http.delete(
+      url,
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+    );
+
+    print('📡 Response Delete Absen: ${response.body}');
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

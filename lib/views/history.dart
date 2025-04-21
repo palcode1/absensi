@@ -72,8 +72,18 @@ class _HistoryPageState extends State<HistoryPage> {
                                     'yyyy-MM-dd',
                                   ).format(item.createdAt!)
                                   : '-';
-                          final checkIn = item.checkIn ?? '-';
-                          final checkOut = item.checkOut ?? '-';
+                          final checkIn =
+                              item.checkIn != null
+                                  ? DateFormat(
+                                    'yyyy-MM-dd HH:mm:ss',
+                                  ).format((item.checkIn!))
+                                  : '-';
+                          final checkOut =
+                              item.checkOut != null
+                                  ? DateFormat(
+                                    'yyyy-MM-dd HH:mm:ss',
+                                  ).format((item.checkOut!))
+                                  : '-';
                           return Card(
                             margin: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -82,32 +92,119 @@ class _HistoryPageState extends State<HistoryPage> {
                             child: ListTile(
                               leading: const Icon(Icons.calendar_today),
                               title: Text(
-                                "Tanggal: $createdAt",
+                                "Tanggal : $createdAt",
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
-                              ),
+                              ), //title
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SizedBox(height: 4),
                                   Text(
-                                    "Check-In: $checkIn",
+                                    "Status : ${item.status}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    "Check-Out: $checkOut",
+                                    "Check-In : ${item.checkIn != null ? DateFormat('yyyy-MM-dd HH:mm:ss').format(item.checkIn!) : '-'}",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Check-Out : ${item.checkOut != null ? DateFormat('yyyy-MM-dd HH:mm:ss').format(item.checkOut!) : '-'}",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Alasan Izin : ${item.alasanIzin ?? '-'}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
-                              ),
+                              ), //subtitle
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder:
+                                        (context) => AlertDialog(
+                                          title: const Text('Hapus Absen'),
+                                          content: const Text(
+                                            'Apakah Anda yakin ingin menghapus absen ini?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.pop(
+                                                    context,
+                                                    false,
+                                                  ),
+                                              child: const Text('Batal'),
+                                            ), // TextButton Batal
+                                            ElevatedButton(
+                                              onPressed:
+                                                  () => Navigator.pop(
+                                                    context,
+                                                    true,
+                                                  ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                              ),
+                                              child: const Text(
+                                                'Hapus',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ), // ElevatedButton Hapus
+                                          ],
+                                        ), // AlertDialog
+                                  ); // showDialog
+
+                                  if (confirm == true) {
+                                    final success =
+                                        await AbsensiService.deleteAbsensi(
+                                          item.id!,
+                                        );
+                                    if (success) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Absen berhasil dihapus',
+                                          ),
+                                        ),
+                                      );
+                                      _fetchHistory(); // Refresh data setelah delete
+                                    } else {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Gagal menghapus absen',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                              ), // trailing
                             ),
                           );
                         },
@@ -116,89 +213,6 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
         ],
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.blue,
-          items: [
-            _buildNavItem('assets/images/home_icon.png', 0, 'Beranda'),
-            _buildNavItem('assets/images/history_icon.png', 1, 'Riwayat'),
-            _buildNavItem('assets/images/izin_icon.png', 2, 'Izin'),
-            _buildNavItem('assets/images/profile_icon.png', 3, 'Profile'),
-          ],
-          currentIndex: currentIndex,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey[800],
-          selectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-          unselectedLabelStyle: const TextStyle(fontSize: 12),
-          onTap: (index) {
-            setState(() {
-              currentIndex = index;
-            });
-            switch (index) {
-              case 0:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AbsensiPage()),
-                );
-                break;
-              case 1:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HistoryPage()),
-                );
-                break;
-              case 2:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const IzinPage()),
-                );
-                break;
-              case 3:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
-                );
-                break;
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  BottomNavigationBarItem _buildNavItem(
-    String assetPath,
-    int index,
-    String label,
-  ) {
-    bool isSelected = currentIndex == index;
-    return BottomNavigationBarItem(
-      icon: Container(
-        padding: EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color:
-              currentIndex == index
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.transparent,
-          shape: BoxShape.circle,
-        ),
-        child: Image.asset(
-          assetPath,
-          width: 24,
-          height: 24,
-          color:
-              isSelected ? Colors.white : Colors.grey[800], // Dynamic coloring
-        ),
-      ),
-      label: label,
     );
   }
 }

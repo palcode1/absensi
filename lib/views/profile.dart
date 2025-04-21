@@ -1,4 +1,5 @@
 import 'package:absensi/views/absensi.dart';
+import 'package:absensi/views/edit_profile.dart';
 import 'package:absensi/views/history.dart';
 import 'package:absensi/views/izin.dart';
 import 'package:absensi/services/auth_services.dart';
@@ -120,23 +121,31 @@ class _ProfilePageState extends State<ProfilePage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // _editProfile();
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      EditProfilePage(currentName: name ?? ''),
+                            ),
+                          );
+
+                          if (result == true) {
+                            // Jika berhasil edit profile, refresh profile
+                            fetchProfile();
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: 12),
+                          minimumSize: const Size.fromHeight(50),
                         ),
-                        child: Text(
-                          'EDIT PROFILE',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
+                        child: const Text(
+                          'Edit Profile',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
                     ),
@@ -171,86 +180,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.blue,
-          items: [
-            _buildNavItem('assets/images/home_icon.png', 0, 'Beranda'),
-            _buildNavItem('assets/images/history_icon.png', 1, 'Riwayat'),
-            _buildNavItem('assets/images/izin_icon.png', 2, 'Izin'),
-            _buildNavItem('assets/images/profile_icon.png', 3, 'Profile'),
-          ],
-          currentIndex: currentIndex,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey[800],
-          selectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-          unselectedLabelStyle: const TextStyle(fontSize: 12),
-          onTap: (index) {
-            setState(() {
-              currentIndex = index;
-            });
-            switch (index) {
-              case 0:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AbsensiPage()),
-                );
-                break;
-              case 1:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HistoryPage()),
-                );
-                break;
-              case 2:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const IzinPage()),
-                );
-                break;
-              case 3:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
-                );
-                break;
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  BottomNavigationBarItem _buildNavItem(
-    String assetPath,
-    int index,
-    String label,
-  ) {
-    bool isSelected = currentIndex == index;
-    return BottomNavigationBarItem(
-      icon: Container(
-        padding: EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color:
-              currentIndex == index
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.transparent,
-          shape: BoxShape.circle,
-        ),
-        child: Image.asset(
-          assetPath,
-          width: 24,
-          height: 24,
-          color:
-              isSelected ? Colors.white : Colors.grey[800], // Dynamic coloring
-        ),
-      ),
-      label: label,
     );
   }
 }

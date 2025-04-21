@@ -1,18 +1,15 @@
 import 'package:absensi/services/auth_services.dart';
 import 'package:absensi/services/absensi_service.dart';
 import 'package:absensi/views/history.dart';
-import 'package:absensi/views/profile.dart';
-import 'package:absensi/views/izin.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AbsensiPage extends StatefulWidget {
-  const AbsensiPage({super.key});
+  final VoidCallback? onFinishedAbsensi; // <--- Tambahkan callback
+  const AbsensiPage({super.key, this.onFinishedAbsensi});
 
   @override
   State<AbsensiPage> createState() => _AbsensiPageState();
@@ -28,9 +25,7 @@ class _AbsensiPageState extends State<AbsensiPage> {
   bool isWithinRange = false; // Status apakah dalam jangkauan
   bool isLoading = true;
   bool isProcessing = false;
-
   late Timer _timer;
-  int currentIndex = 0; // Menyimpan index menu yang aktif
 
   // Google Maps Controller
   late GoogleMapController mapController;
@@ -38,15 +33,6 @@ class _AbsensiPageState extends State<AbsensiPage> {
 
   // Titik tetap untuk absen
   final LatLng attendancePoint = const LatLng(-6.21087, 106.81298);
-
-  // Lokasi awal (misalnya Jakarta)
-  static const LatLng _initialPosition = LatLng(-6.2088, 106.8456);
-
-  // Kamera posisi untuk Google Maps
-  CameraPosition _initialCameraPosition = CameraPosition(
-    target: _initialPosition,
-    zoom: 50.0,
-  );
 
   @override
   void initState() {
@@ -135,6 +121,66 @@ class _AbsensiPageState extends State<AbsensiPage> {
     print('Jarak ke titik absen: ${distance.toStringAsFixed(2)} meter');
   }
 
+  Future<void> _showIzinDialog() async {
+    TextEditingController alasanController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Ajukan Izin'),
+          content: TextField(
+            controller: alasanController,
+            maxLines: 3,
+            decoration: const InputDecoration(hintText: 'Masukkan alasan izin'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+
+                if (alasanController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Alasan izin tidak boleh kosong'),
+                    ),
+                  );
+                  return;
+                }
+
+                if (_currentPosition == null) return;
+
+                final result = await AbsensiService.submitIzin(
+                  latitude: _currentPosition!.latitude,
+                  longitude: _currentPosition!.longitude,
+                  address: "Lokasi Pengajuan Izin",
+                  alasanIzin: alasanController.text,
+                );
+
+                if (result == "Success") {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Pengajuan Izin berhasil!')),
+                  );
+                  // Refresh status hari ini
+                  _fetchStatusHariIni();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Gagal mengajukan izin.')),
+                  );
+                }
+              },
+              child: const Text('Kirim'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _handleAbsensi() async {
     if (_currentPosition == null) return;
 
@@ -202,10 +248,9 @@ class _AbsensiPageState extends State<AbsensiPage> {
       }
     } else if (isCheckedIn && isCheckedOut) {
       // Sudah absen semua ➔ Pergi ke HistoryPage
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HistoryPage()),
-      );
+      if (widget.onFinishedAbsensi != null) {
+        widget.onFinishedAbsensi!(); // Panggil callback jika ada
+      }
     }
 
     setState(() {
@@ -312,38 +357,67 @@ class _AbsensiPageState extends State<AbsensiPage> {
                     Text(_currentDate, style: const TextStyle(fontSize: 16)),
                     const SizedBox(height: 16),
                     // Tombol Check-In
-                    ElevatedButton(
-                      onPressed:
-                          isWithinRange && !isProcessing
-                              ? _handleAbsensi
-                              : null,
-                      style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        padding: const EdgeInsets.all(50),
-                        backgroundColor:
-                            !isCheckedIn
-                                ? Colors.blue
-                                : isCheckedIn && !isCheckedOut
-                                ? Colors.red
-                                : Colors.grey,
-                        elevation: 6,
-                      ),
-                      child:
-                          isProcessing
-                              ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                              : Text(
-                                !isCheckedIn
-                                    ? "Check-In"
-                                    : isCheckedIn && !isCheckedOut
-                                    ? "Check-Out"
-                                    : "Sudah Absen",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed:
+                                isWithinRange && !isProcessing
+                                    ? _handleAbsensi
+                                    : null,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor:
+                                  !isCheckedIn
+                                      ? Colors.blue
+                                      : isCheckedIn && !isCheckedOut
+                                      ? Colors.red
+                                      : Colors.grey,
+                              elevation: 6,
+                            ),
+                            child:
+                                isProcessing
+                                    ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                    : Text(
+                                      !isCheckedIn
+                                          ? "Check-In"
+                                          : isCheckedIn && !isCheckedOut
+                                          ? "Check-Out"
+                                          : "Sudah Absen",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                          ),
+                        ),
+                        const SizedBox(width: 12), // Jarak antar tombol
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: !isProcessing ? _showIzinDialog : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 6, // Tambahkan elevation disini
+                            ),
+                            child: const Text(
+                              'Ajukan Izin',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -362,84 +436,6 @@ class _AbsensiPageState extends State<AbsensiPage> {
           ),
         ],
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.blue,
-          currentIndex: currentIndex,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey[800],
-          selectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-          unselectedLabelStyle: const TextStyle(fontSize: 12),
-          onTap: (index) {
-            setState(() {
-              currentIndex = index;
-            });
-            switch (index) {
-              case 0:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AbsensiPage()),
-                );
-                break;
-              case 1:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HistoryPage()),
-                );
-                break;
-              case 2:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const IzinPage()),
-                );
-                break;
-              case 3:
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
-                );
-                break;
-            }
-          },
-          items: [
-            _buildNavItem('assets/images/home_icon.png', 0, 'Beranda'),
-            _buildNavItem('assets/images/history_icon.png', 1, 'Riwayat'),
-            _buildNavItem('assets/images/izin_icon.png', 2, 'Izin'),
-            _buildNavItem('assets/images/profile_icon.png', 3, 'Profile'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  BottomNavigationBarItem _buildNavItem(
-    String assetPath,
-    int index,
-    String label,
-  ) {
-    bool isSelected = currentIndex == index;
-    return BottomNavigationBarItem(
-      icon: Container(
-        padding: EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color:
-              isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
-          shape: BoxShape.circle,
-        ),
-        child: Image.asset(
-          assetPath,
-          width: 24,
-          height: 24,
-          color:
-              isSelected ? Colors.white : Colors.grey[800], // Dynamic coloring
-        ),
-      ),
-      label: label,
     );
   }
 }
