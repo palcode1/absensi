@@ -1,6 +1,7 @@
 import 'package:absensi/services/auth_services.dart';
 import 'package:absensi/services/absensi_service.dart';
 import 'package:absensi/views/history.dart';
+import 'package:absensi/views/main_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -73,11 +74,16 @@ class _AbsensiPageState extends State<AbsensiPage> {
     final status = await AbsensiService.fetchStatusHariIni();
     if (status.isNotEmpty) {
       setState(() {
-        if (status['check_in'] != null) {
+        if (status['status'] == 'izin') {
           isCheckedIn = true;
-        }
-        if (status['check_out'] != null) {
           isCheckedOut = true;
+        } else {
+          if (status['check_in'] != null) {
+            isCheckedIn = true;
+          }
+          if (status['check_out'] != null) {
+            isCheckedOut = true;
+          }
         }
       });
       print(
@@ -141,8 +147,6 @@ class _AbsensiPageState extends State<AbsensiPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.pop(context);
-
                 if (alasanController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -165,8 +169,18 @@ class _AbsensiPageState extends State<AbsensiPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Pengajuan Izin berhasil!')),
                   );
-                  // Refresh status hari ini
-                  _fetchStatusHariIni();
+                  setState(() {
+                    isCheckedIn = true;
+                    isCheckedOut = true;
+                  });
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MainHomePage(initialIndex: 1),
+                      ),
+                    );
+                  });
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Gagal mengajukan izin.')),

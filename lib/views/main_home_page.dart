@@ -4,7 +4,8 @@ import 'package:absensi/views/profile.dart';
 import 'package:flutter/material.dart';
 
 class MainHomePage extends StatefulWidget {
-  const MainHomePage({super.key});
+  final int initialIndex;
+  const MainHomePage({super.key, this.initialIndex = 0});
 
   @override
   State<MainHomePage> createState() => _MainHomePageState();
@@ -17,6 +18,7 @@ class _MainHomePageState extends State<MainHomePage> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _selectedIndex);
   }
 

@@ -90,7 +90,6 @@ class _HistoryPageState extends State<HistoryPage> {
                               vertical: 8,
                             ),
                             child: ListTile(
-                              leading: const Icon(Icons.calendar_today),
                               title: Text(
                                 "Tanggal : $createdAt",
                                 style: TextStyle(
@@ -105,21 +104,21 @@ class _HistoryPageState extends State<HistoryPage> {
                                   Text(
                                     "Status : ${item.status}",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    "Check-In : ${item.checkIn != null ? DateFormat('yyyy-MM-dd HH:mm:ss').format(item.checkIn!) : '-'}",
+                                    "Check-In : ${item.checkIn != null ? DateFormat('HH:mm:ss').format(item.checkIn!) : '-'}",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    "Check-Out : ${item.checkOut != null ? DateFormat('yyyy-MM-dd HH:mm:ss').format(item.checkOut!) : '-'}",
+                                    "Check-Out : ${item.checkOut != null ? DateFormat('HH:mm:ss').format(item.checkOut!) : '-'}",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -211,6 +210,25 @@ class _HistoryPageState extends State<HistoryPage> {
                       ),
                     ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100, // Lebar label
+            child: Text(
+              '$label :',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+          ),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 14))),
         ],
       ),
     );
