@@ -125,7 +125,11 @@ class AbsensiService {
       for (var data in dataList) {
         final createdAt = data['created_at']?.toString() ?? '';
         if (createdAt.startsWith(today)) {
-          return {"check_in": data['check_in'], "check_out": data['check_out']};
+          return {
+            "check_in": data['check_in'],
+            "check_out": data['check_out'],
+            "status": data['status'],
+          };
         }
       }
     }
