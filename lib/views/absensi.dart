@@ -311,7 +311,7 @@ class _AbsensiPageState extends State<AbsensiPage> {
                               : GoogleMap(
                                 initialCameraPosition: CameraPosition(
                                   target: _currentPosition!,
-                                  zoom: 17,
+                                  zoom: 20,
                                 ),
                                 myLocationEnabled: true,
                                 onMapCreated: (GoogleMapController controller) {

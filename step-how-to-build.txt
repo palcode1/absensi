@@ -1,0 +1,125 @@
+Struktur Folder
+lib/
+│
+├── main.dart
+├── models/
+│   ├── user_model.dart
+│   └── absensi_model.dart
+│
+├── pages/
+│   ├── auth/
+│   │   ├── login_page.dart
+│   │   └── register_page.dart
+│   ├── home/
+│   │   ├── dashboard_page.dart
+│   │   └── maps_widget.dart
+│   ├── history/
+│   │   └── history_page.dart
+│   └── profile/
+│       ├── profile_page.dart
+│       └── edit_profile_page.dart
+│
+├── services/
+│   ├── db_service.dart
+│   ├── auth_service.dart
+│   ├── absensi_service.dart
+│   ├── location_service.dart
+│   └── shared_pref_service.dart
+│
+├── utils/
+│   ├── constants.dart
+│   ├── helper.dart
+│   └── time_utils.dart
+│
+└── widgets/
+    ├── custom_appbar.dart
+    ├── custom_button.dart
+    └── input_field.dart
+
+Langkah-Langkah Pembangunan
+1. Setup Project Flutter
+Inisialisasi: flutter create absensi_app
+
+Tambahkan dependency:
+dependencies:
+  sqflite: ^2.3.0
+  path: ^1.8.0
+  shared_preferences: ^2.0.15
+  geolocator: ^10.0.0
+  google_maps_flutter: ^2.2.8
+  intl: ^0.18.1
+
+2. Buat Model
+user_model.dart
+
+id, uid, name, email, password
+
+absensi_model.dart
+
+id, uid, date, checkIn, checkOut, location
+
+3. Buat DB Service (db_service.dart)
+Fungsi:
+
+initDB()
+
+insertUser(), getUserByEmail(), updateUser()
+
+insertAbsensi(), getAbsensiByUID(), updateCheckOut()
+
+4. Auth & Session
+RegisterPage
+
+Simpan ke database SQLite
+
+LoginPage
+
+Cek email + password, simpan UID di SharedPreferences
+
+AuthService
+
+Fungsi: login, register, getLoggedInUser(), logout
+
+5. DashboardPage
+AppBar Custom: tampilkan nama user dari DB
+
+Tampilkan tanggal dan jam realtime
+
+Gunakan google_maps_flutter:
+
+Tampilkan marker lokasi kantor (fix)
+
+Tampilkan lokasi user (dynamic)
+
+Hitung jarak, jika <15m aktifkan tombol check-in
+
+Tombol Check-in & Check-out:
+
+Hanya aktif jika kondisi terpenuhi
+
+Simpan ke SQLite (absensi_model)
+
+Selesai check-out → navigate ke HistoryPage
+
+6. HistoryPage
+Ambil UID dari SharedPreferences
+
+Tampilkan absensi user saja
+
+Tampilkan: tanggal, jam masuk, jam keluar, lokasi
+
+7. ProfilePage
+Tampilkan data user berdasarkan UID
+
+Button:
+
+Edit: update nama/email
+
+Logout: hapus UID dari SharedPreferences
+
+8. Utility
+time_utils.dart: format hari dan jam
+
+location_service.dart: dapatkan lokasi user
+
+shared_pref_service.dart: simpan dan ambil UID
