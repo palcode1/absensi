@@ -56,11 +56,9 @@ class _RegisterPageState extends State<RegisterPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', result.data!.token!);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Registrasi berhasil! Selamat datang, $userName"),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Registrasi berhasil!")));
 
       Navigator.pushReplacement(
         context,

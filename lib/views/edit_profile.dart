@@ -89,7 +89,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                        'Simpan',
+                        'SIMPAN',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,

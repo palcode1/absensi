@@ -94,28 +94,24 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Icon(Icons.person, size: 50, color: Colors.grey),
                     ),
                     SizedBox(height: 16),
-                    Text(
-                      'Nama Lengkap',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text('Nama Lengkap', style: TextStyle(fontSize: 20)),
                     Text(
                       name ?? 'Loading...',
-                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Email',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
+                    SizedBox(height: 8),
+                    Text('Email', style: TextStyle(fontSize: 20)),
                     Text(
                       email ?? 'Loading...',
-                      style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                     SizedBox(height: 24),
                     SizedBox(
@@ -144,8 +140,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           minimumSize: const Size.fromHeight(50),
                         ),
                         child: const Text(
-                          'Edit Profile',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
+                          'EDIT PROFILE',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
